@@ -1,19 +1,23 @@
 package tictactoe;
 
-import java.nio.CharBuffer;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Game {
+    private static final char EMPTY_CELL = ' ';
+
     char[][] board;
     char userSymbol;
     char botSymbol;
+    Difficulty level;
+    enum Difficulty {
+        EASY,
+        MEDIUM,
+        HARD
+    }
 
     enum State {
-        NOT_FINISHED("Game not finished"),
+        PLAYING("Game not finished"),
         DRAW("Draw"),
         X_WINS("X wins"),
         O_WINS("O wins");
@@ -30,71 +34,75 @@ public class Game {
         }
     }
 
-    public Game(final String initState) {
-        this.board = getNewBoard(initState);
-        setPlayers(initState);
-        printGameBoard();
+    public Game() {
+        this.board = getNewBoard();
+        this.userSymbol = 'X';
+        this.botSymbol = 'O';
+        this.level = Difficulty.EASY;
     }
 
-    private void setPlayers(final String initState) {
-        var xPattern = Pattern.compile("X");
-        var xMatcher = xPattern.matcher(initState);
-        var xCount = (int) xMatcher.results().count();
-
-        var oPattern = Pattern.compile("O");
-        var oMatcher = oPattern.matcher(initState);
-        var oCount = (int) oMatcher.results().count();
-
-        if (xCount == oCount) {
-            userSymbol = 'X';
-            botSymbol = 'O';
-        } else {
-            userSymbol = 'O';
-            botSymbol = 'X';
-        }
-    }
-
-    private char[][] getNewBoard(final String initState) {
+    private char[][] getNewBoard() {
         var newBoard = new char[3][3];
-        List<Character> flatBoardCellValues = CharBuffer.wrap(initState).chars()
-                .mapToObj(Game::initStateToBoardSymbols).toList();
-        Iterator<Character> flatBoardIterator = flatBoardCellValues.iterator();
-        for (int row = 0; row < newBoard.length; row++) {
-            for (int col = 0; col < newBoard[row].length; col++) {
-                newBoard[row][col] = flatBoardIterator.next();
-            }
+        for (char[] chars : newBoard) {
+            Arrays.fill(chars, EMPTY_CELL);
         }
         return newBoard;
     }
 
-    private static Character initStateToBoardSymbols(int ch) {
-        return switch (ch) {
-            case '_' -> ' ';
-            case 'X', 'O' -> (char) ch;
-            default -> throw new IllegalStateException("Unexpected value: " + ch);
-        };
+    private void setCellValue(final Pair<Integer> coordinates, char value) {
+        this.board[coordinates.row()-1][coordinates.col()-1] = value;
     }
 
-    private void setCellValue(int row, int col, char value) {
-        this.board[row-1][col-1] = value;
-    }
-
-    private char getCellValue(int row, int col) {
-        return this.board[row-1][col-1];
+    private char getCellValue(final Pair<Integer> coordinates) {
+        return this.board[coordinates.row()-1][coordinates.col()-1];
     }
 
     private void printGameBoard() {
         System.out.println("---------");
-        for (char[] chars : board) {
-            System.out.printf("| %c %c %c |\n", chars[0], chars[1], chars[2]);
+        for (char[] rowCells : board) {
+            System.out.printf("| %c %c %c |\n", rowCells[0], rowCells[1], rowCells[2]);
         }
         System.out.println("---------");
     }
 
-    public void start() {
+    public void play() {
+        printGameBoard();
+
+        var gameState = State.PLAYING;
+        while (gameState == State.PLAYING) {
+            var coordinates = getUserCoordinates();
+            if (isValidUserMove(coordinates)) {
+                gameState = makeUserMove(coordinates);
+                if (gameState == State.PLAYING) {
+                    gameState = makeComputerMove();
+                }
+
+                // show game result before quiting
+                if (gameState != State.PLAYING) {
+                    System.out.println(gameState);
+                }
+            }
+        }
+    }
+
+    private State makeUserMove(final Pair<Integer> coordinates) {
+        setCellValue(coordinates, userSymbol);
+        printGameBoard();
+        return getCurrentGameState();
+    }
+
+    private boolean isValidUserMove(final Pair<Integer> coordinates) {
+        var cellValue = getCellValue(coordinates);
+        if (cellValue != EMPTY_CELL) {
+            System.out.println("This cell is occupied! Choose another one!");
+            return false;
+        }
+        return true;
+    }
+
+    private Pair<Integer> getUserCoordinates() {
         var scanner = new Scanner(System.in);
-        var gameState = State.NOT_FINISHED;
-        while (gameState == State.NOT_FINISHED) {
+        while (true) {
             System.out.print("Enter the coordinates: ");
             var coordinatesString = scanner.nextLine();
             var validationPattern = Pattern.compile("\\d\\s\\d");
@@ -105,45 +113,67 @@ public class Game {
                 System.out.println("You should enter numbers!");
                 continue;
             }
-            System.out.println();
             List<Integer> coordinates = Arrays.stream(coordinatesString.split("\\s"))
                     .map(Integer::parseInt).toList();
-            int row = coordinates.get(0);
-            int col = coordinates.get(1);
-            if (row < 1 || row > 3 || col < 1 || col > 3) {
+            int rowCoordinate = coordinates.get(0);
+            int columnCoordinate = coordinates.get(1);
+            if (rowCoordinate < 1 || rowCoordinate > 3 || columnCoordinate < 1 || columnCoordinate > 3) {
                 System.out.println("Coordinates should be from 1 to 3!");
                 continue;
             }
-
-            var cellValue = getCellValue(row, col);
-            if (cellValue != ' ') {
-                System.out.println("This cell is occupied! Choose another one!");
-                continue;
-            }
-            setCellValue(row, col, userSymbol);
-            printGameBoard();
-
-            gameState = getCurrentGameState();
-            System.out.println(gameState);
+            return new Pair<>(rowCoordinate, columnCoordinate);
         }
     }
 
+    private State makeComputerMove() {
+        var allEmptyCellsFlatIndexes = getAllEmptyCellsFlatIndexes();
+        var randomIndexPosition = new Random(System.nanoTime())
+                .nextInt(allEmptyCellsFlatIndexes.size());
+        var randomEmptyCellFlatIndex = allEmptyCellsFlatIndexes.get(randomIndexPosition);
+        var coordinates = convertCellFlatIndexToCoordinates(randomEmptyCellFlatIndex);
+
+        System.out.printf("Making move level \"%s\"\n", level.toString().toLowerCase());
+        setCellValue(coordinates, botSymbol);
+        printGameBoard();
+
+        return getCurrentGameState();
+    }
+
+    private Pair<Integer> convertCellFlatIndexToCoordinates(int cellFlatIndex) {
+        int rowCoordinate = cellFlatIndex / 3 + 1;
+        int columnCoordinate = cellFlatIndex - 3 * (cellFlatIndex / 3) + 1;
+        return new Pair<>(rowCoordinate, columnCoordinate);
+    }
+
+    private List<Integer> getAllEmptyCellsFlatIndexes() {
+        var emptyCellsFlatIndexes = new ArrayList<Integer>();
+        for (int rowIdx = 0; rowIdx < board.length; rowIdx++) {
+            for (int colIdx = 0; colIdx < board[rowIdx].length; colIdx++) {
+                if (board[rowIdx][colIdx] == EMPTY_CELL) {
+                    var cellFlatCoordinate = 3 * rowIdx + colIdx;
+                    emptyCellsFlatIndexes.add(cellFlatCoordinate);
+                }
+            }
+        }
+        return emptyCellsFlatIndexes;
+    }
+
     private State getCurrentGameState() {
-        for (char[] chars : board) {
-            if (chars[0] != ' ' && chars[0] == chars[1]
-                    && chars[1] == chars[2]) {
-                return getWinningState(chars[0]);
+        for (char[] rowCells : board) {
+            if (rowCells[0] != EMPTY_CELL && rowCells[0] == rowCells[1]
+                    && rowCells[1] == rowCells[2]) {
+                return getWinningState(rowCells[0]);
             }
         }
 
         for (int col = 0; col < 3; col++) {
-            if (board[0][col] != ' ' && board[0][col] == board[1][col]
+            if (board[0][col] != EMPTY_CELL && board[0][col] == board[1][col]
                     && board[1][col] == board[2][col]) {
                 return getWinningState(board[0][col]);
             }
         }
 
-        if (board[1][1] != ' '
+        if (board[1][1] != EMPTY_CELL
                 && ((board[0][0] == board[1][1] && board[1][1] == board[2][2])
                         || (board[2][0] == board[1][1] && board[1][1] == board[0][2]))) {
             return getWinningState(board[1][1]);
@@ -155,7 +185,7 @@ public class Game {
             return State.DRAW;
         }
 
-        return State.NOT_FINISHED;
+        return State.PLAYING;
     }
 
     private State getWinningState(char symbol) {
@@ -164,5 +194,8 @@ public class Game {
         } else {
             return State.O_WINS;
         }
+    }
+
+    record Pair<T>(T row, T col) {
     }
 }
