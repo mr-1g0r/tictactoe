@@ -5,16 +5,10 @@ import java.util.regex.Pattern;
 
 public class Game {
     private static final char EMPTY_CELL = ' ';
+    final Settings settings;
 
-    char[][] board;
-    char userSymbol;
-    char botSymbol;
-    Difficulty level;
-    enum Difficulty {
-        EASY,
-        MEDIUM,
-        HARD
-    }
+    private final char[][] board;
+    private final Scanner scanner;
 
     enum State {
         PLAYING("Game not finished"),
@@ -34,11 +28,10 @@ public class Game {
         }
     }
 
-    public Game() {
+    public Game(final Settings settings, final Scanner scanner) {
         this.board = getNewBoard();
-        this.userSymbol = 'X';
-        this.botSymbol = 'O';
-        this.level = Difficulty.EASY;
+        this.settings = settings;
+        this.scanner = scanner;
     }
 
     private char[][] getNewBoard() {
@@ -70,28 +63,43 @@ public class Game {
 
         var gameState = State.PLAYING;
         while (gameState == State.PLAYING) {
-            var coordinates = getUserCoordinates();
-            if (isValidUserMove(coordinates)) {
-                gameState = makeUserMove(coordinates);
-                if (gameState == State.PLAYING) {
-                    gameState = makeComputerMove();
-                }
+            // "Player One" Turn
+            gameState = doPlayerTurn(gameState, settings.playerOne());
+            if (gameState == State.PLAYING) {
+                // "Player Two" Turn
+                gameState = doPlayerTurn(gameState, settings.playerTwo());
+            }
 
-                // show game result before quiting
-                if (gameState != State.PLAYING) {
-                    System.out.println(gameState);
-                }
+            // show game result before quiting
+            if (gameState != State.PLAYING) {
+                System.out.println(gameState);
             }
         }
     }
 
-    private State makeUserMove(final Pair<Integer> coordinates) {
-        setCellValue(coordinates, userSymbol);
+    private State doPlayerTurn(final State oldGameState, final Player player) {
+        Pair<Integer> coordinates;
+        if (player.mode() == Player.Mode.USER) {
+            coordinates = getUserCoordinates();
+        } else {
+            coordinates = getComputerCoordinates();
+        }
+        if (isValidMove(coordinates)) {
+            return makeMove(coordinates, player); // new Game State
+        }
+        return oldGameState;
+    }
+
+    private State makeMove(final Pair<Integer> coordinates, final Player player) {
+        if (player.mode() == Player.Mode.COMPUTER) {
+            System.out.printf("Making move level \"%s\"%n", player.difficulty().toString().toLowerCase());
+        }
+        setCellValue(coordinates, player.symbol().toChar());
         printGameBoard();
         return getCurrentGameState();
     }
 
-    private boolean isValidUserMove(final Pair<Integer> coordinates) {
+    private boolean isValidMove(final Pair<Integer> coordinates) {
         var cellValue = getCellValue(coordinates);
         if (cellValue != EMPTY_CELL) {
             System.out.println("This cell is occupied! Choose another one!");
@@ -101,7 +109,6 @@ public class Game {
     }
 
     private Pair<Integer> getUserCoordinates() {
-        var scanner = new Scanner(System.in);
         while (true) {
             System.out.print("Enter the coordinates: ");
             var coordinatesString = scanner.nextLine();
@@ -125,18 +132,12 @@ public class Game {
         }
     }
 
-    private State makeComputerMove() {
+    private Pair<Integer> getComputerCoordinates() {
         var allEmptyCellsFlatIndexes = getAllEmptyCellsFlatIndexes();
         var randomIndexPosition = new Random(System.nanoTime())
                 .nextInt(allEmptyCellsFlatIndexes.size());
         var randomEmptyCellFlatIndex = allEmptyCellsFlatIndexes.get(randomIndexPosition);
-        var coordinates = convertCellFlatIndexToCoordinates(randomEmptyCellFlatIndex);
-
-        System.out.printf("Making move level \"%s\"\n", level.toString().toLowerCase());
-        setCellValue(coordinates, botSymbol);
-        printGameBoard();
-
-        return getCurrentGameState();
+        return convertCellFlatIndexToCoordinates(randomEmptyCellFlatIndex);
     }
 
     private Pair<Integer> convertCellFlatIndexToCoordinates(int cellFlatIndex) {
