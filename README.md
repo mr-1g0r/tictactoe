@@ -1,170 +1,150 @@
 # tictactoe
 
-## Stage 3/5: Watch them fight
+## Stage 4/5: Signs of intelligence
 
 # Description
-It's time to make things more interesting by adding some game variations. What if you want to play against a friend instead of the AI? How about if you get tired of playing the game and want to see a match between two AIs? You also need to give the user the option of going first or second when playing against the AI.
+Let's write the medium difficulty level now. To do this, we need to add awareness to our AI.
 
-It should be possible for the user to quit the game after the result is displayed as well.
+This level will be a lot harder to beat than easy, even though the initial moves are still random. When the AI is playing at medium level, it wins when it can because of its first rule, and stops all simple attempts to beat it due to its second.
+
+You can see these rules below.
 
 # Objectives
-Your tasks for this stage are:
+When the AI is playing at medium difficulty level, it makes moves using the following logic:
 
-1. Write a menu loop, which can interpret two commands: start and exit.
-2. Implement the command start. It should take two parameters: who will play X and who will play O. Two options are possible for now: user to play as a human, and easy to play as an AI.
-3. The exit command should simply end the program.
-
-In later steps, you will add the medium and hard levels.
-
-Don't forget to handle incorrect input! The message Bad parameters! should be displayed if what the user enters is invalid.
+If it already has two in a row and can win with one further move, it does so.
+If its opponent can win with one move, it plays the move necessary to block this.
+Otherwise, it makes a random move.
+You should add a medium parameter so that you can play against this level. It should also be possible to make AIs using easy and medium levels play against each other!
 
 # Example
 
 The example below shows how your program should work.
 The greater-than symbol followed by a space (> ) represents the user input. Note that it's not part of the input.
-
 ```
-Input command: > start
-Bad parameters!
-Input command: > start easy
-Bad parameters!
-Input command: > start easy easy
+Input command: > start user medium
 ---------
 |       |
 |       |
 |       |
----------
-Making move level "easy"
----------
-|       |
-|     X |
-|       |
----------
-Making move level "easy"
----------
-|       |
-| O   X |
-|       |
----------
-Making move level "easy"
----------
-|       |
-| O   X |
-|     X |
----------
-Making move level "easy"
----------
-|       |
-| O   X |
-|   O X |
----------
-Making move level "easy"
----------
-|       |
-| O X X |
-|   O X |
----------
-Making move level "easy"
----------
-|     O |
-| O X X |
-|   O X |
----------
-Making move level "easy"
----------
-| X   O |
-| O X X |
-|   O X |
----------
-X wins
-
-Input command: > start easy user
----------
-|       |
-|       |
-|       |
----------
-Making move level "easy"
----------
-|       |
-|       |
-|     X |
 ---------
 Enter the coordinates: > 2 2
 ---------
 |       |
-|   O   |
-|     X |
----------
-Making move level "easy"
----------
 |   X   |
-|   O   |
-|     X |
+|       |
 ---------
-Enter the coordinates: > 3 1
+Making move level "medium"
 ---------
+|       |
 |   X   |
-|   O   |
-| O   X |
----------
-Making move level "easy"
----------
-|   X X |
-|   O   |
-| O   X |
----------
-Enter the coordinates: > 2 3
----------
-|   X X |
-|   O O |
-| O   X |
----------
-Making move level "easy"
----------
-| X X X |
-|   O O |
-| O   X |
----------
-X wins
-
-Input command: > start user user
----------
-|       |
-|       |
-|       |
----------
-Enter the coordinates: > 3 1
----------
-|       |
-|       |
-| X     |
----------
-Enter the coordinates: > 2 2
----------
-|       |
-|   O   |
-| X     |
----------
-Enter the coordinates: > 2 1
----------
-|       |
-| X O   |
-| X     |
----------
-Enter the coordinates: > 3 2
----------
-|       |
-| X O   |
-| X O   |
+| O     |
 ---------
 Enter the coordinates: > 1 1
 ---------
 | X     |
-| X O   |
-| X O   |
+|   X   |
+| O     |
 ---------
-X wins
+Making move level "medium"
+---------
+| X     |
+|   X   |
+| O   O |
+---------
+Enter the coordinates: > 3 3
+---------
+| X     |
+|   X   |
+| O X O |
+---------
+Making move level "medium"
+---------
+| X O   |
+|   X   |
+| O X O |
+---------
+Enter the coordinates: > 2 1
+---------
+| X O   |
+| X X   |
+| O X O |
+---------
+Making move level "medium"
+---------
+| X O   |
+| X X O |
+| O X O |
+---------
+Enter the coordinates: > 1 3
+---------
+| X O X |
+| X X O |
+| O X O |
+---------
+Draw
+
+Input command: > start medium user
+---------
+|       |
+|       |
+|       |
+---------
+Making move level "medium"
+---------
+|       |
+|       |
+|   X   |
+---------
+Enter the coordinates: > 2 2
+---------
+|       |
+|   O   |
+|   X   |
+---------
+Making move level "medium"
+---------
+|       |
+|   O   |
+| X X   |
+---------
+Enter the coordinates: > 3 3
+---------
+|       |
+|   O   |
+| X X O |
+---------
+Making move level "medium"
+---------
+| X     |
+|   O   |
+| X X O |
+---------
+Enter the coordinates: > 2 1
+---------
+| X     |
+| O O   |
+| X X O |
+---------
+Making move level "medium"
+---------
+| X     |
+| O O X |
+| X X O |
+---------
+Enter the coordinates: > 1 3
+---------
+| X   O |
+| O O X |
+| X X O |
+---------
+Making move level "medium"
+---------
+| X X O |
+| O O X |
+| X X O |
+---------
+Draw
 
 Input command: > exit
 ```

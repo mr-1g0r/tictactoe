@@ -12,7 +12,7 @@ public class Main {
 
         var menu = new Menu(scanner);
         while (menu.startNewGame()) {
-            var game = new Game(menu.getSettings(), scanner);
+            var game = new Game(menu.getSettings());
             game.play();
         }
     }
@@ -24,7 +24,7 @@ class Menu {
     private Settings settings;
 
     record CommandMatcher(Pattern pattern, Class<? extends Command> clazz) {}
-    private static final Pattern START_CMD_PATTERN = Pattern.compile("start\\s(easy|user)\\s(easy|user)");
+    private static final Pattern START_CMD_PATTERN = Pattern.compile("start\\s(medium|easy|user)\\s(medium|easy|user)");
     private static final Pattern EXIT_CMD_PATTERN = Pattern.compile("exit\\b");
     private static final List<CommandMatcher> ALL_COMMANDS = List.of(
             new CommandMatcher(START_CMD_PATTERN, Start.class),
@@ -98,35 +98,41 @@ class Menu {
             var commandMatcher = START_CMD_PATTERN.matcher(commandString);
             if (commandMatcher.matches()) {
                 this.settings = new Settings(
-                        new Player(getMode(commandMatcher.group(1)),
-                                getDifficulty(commandMatcher.group(1)),
-                                Player.Symbol.X),
-                        new Player(getMode(commandMatcher.group(2)),
-                                getDifficulty(commandMatcher.group(2)),
-                                Player.Symbol.O)
+                        getPlayer(commandMatcher.group(1), Player.Symbol.X),
+                        getPlayer(commandMatcher.group(2), Player.Symbol.O)
                 );
             } else {
                 throw new IllegalArgumentException(commandString);
             }
         }
 
-        private Player.Mode getMode(String param) {
-            if (param.equalsIgnoreCase(String.valueOf(Player.Mode.USER))) {
-                return Player.Mode.USER;
+        private Player getPlayer(String param, Player.Symbol symbol) {
+            if (param.equalsIgnoreCase(String.valueOf(Mode.USER))) {
+                return new UserPlayer(symbol);
             }
-            return Player.Mode.COMPUTER;
-        }
 
-        private Player.Difficulty getDifficulty(String param) {
-            if (!param.equalsIgnoreCase(String.valueOf(Player.Mode.USER))) {
-                return Player.Difficulty.valueOf(param.toUpperCase());
-            }
-            return null;
+            return switch (Difficulty.valueOf(param.toUpperCase())) {
+                case EASY -> new ComputerPlayerEasy(symbol);
+                case MEDIUM -> new ComputerPlayerMedium(symbol);
+                default -> throw new IllegalArgumentException(param);
+            };
         }
 
         @Override
         public Settings getSettings() {
             return this.settings;
         }
+    }
+
+
+    enum Mode {
+        COMPUTER,
+        USER
+    }
+
+    enum Difficulty {
+        EASY,
+        MEDIUM,
+        HARD
     }
 }
