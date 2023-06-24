@@ -7,7 +7,7 @@ public class Game {
     private final Board board;
 
     public Game(final Settings settings) {
-        this.board = Board.buildNewBoard();
+        this.board = Board.createBoard();
         this.settings = settings;
     }
 

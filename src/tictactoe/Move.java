@@ -2,22 +2,7 @@ package tictactoe;
 
 import java.util.Objects;
 
-public final class Move {
-    private final int row;
-    private final int col;
-
-    public Move(int row, int col) {
-        this.row = row;
-        this.col = col;
-    }
-
-    public int row() {
-        return row;
-    }
-
-    public int col() {
-        return col;
-    }
+public record Move(int row, int col) {
 
     @Override
     public boolean equals(Object obj) {
@@ -29,15 +14,14 @@ public final class Move {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(row, col);
-    }
-
-    @Override
     public String toString() {
         return "Move[" +
                 "row=" + row + ", " +
                 "col=" + col + ']';
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(row, col);
+    }
 }

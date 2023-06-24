@@ -40,12 +40,8 @@ public class ComputerPlayerMedium extends ComputerPlayer {
     private Pair getLineStats(final Board board, final Symbol symbol) {
         return Board.winningLines.keySet().stream()
                 .map(lineName -> {
-                    long symbolCount = board.getLine(lineName).stream()
-                            .filter(cellValue -> cellValue == symbol.toChar())
-                            .count();
-                    long emptyCellsCount = board.getLine(lineName).stream()
-                            .filter(cellValue -> cellValue == Board.EMPTY_CELL)
-                            .count();
+                    long symbolCount = board.getCharCountInLine(lineName, symbol.toChar());
+                    long emptyCellsCount = board.getCharCountInLine(lineName, Board.EMPTY_CELL);
                     return new Pair(lineName, emptyCellsCount == 0 ? -1 : symbolCount);
                 })
                 .reduce((result, pair) -> pair.count() > result.count() ? pair : result)

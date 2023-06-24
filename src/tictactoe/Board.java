@@ -28,8 +28,21 @@ public class Board {
         }
     }
 
-    public static Board buildNewBoard() {
+    private Board(final Board other) {
+        this.board = new char[3][3];
+        for (int idx = 0; idx < 3; idx++) {
+            this.board[idx] = other.board[idx].clone();
+        }
+    }
+
+    public static Board createBoard() {
         return new Board();
+    }
+
+    public static Board copyBoardAddMove(final Board board, final Move move, char cellValue) {
+        var newBoard = new Board(board);
+        newBoard.setCellValue(move, cellValue);
+        return newBoard;
     }
 
     public boolean isValidMove(final Move move) {
@@ -84,6 +97,12 @@ public class Board {
         return Optional.empty();
     }
 
+    public long getCharCountInLine(final String lineName, final char symbolChar) {
+        return getLine(lineName).stream()
+                .filter(cellValue -> cellValue == symbolChar)
+                .count();
+    }
+
     public List<Integer> getAllEmptyCellsFlatIndexes() {
         var emptyCellsFlatIndexes = new ArrayList<Integer>();
         for (int rowIdx = 0; rowIdx < board.length; rowIdx++) {
@@ -103,7 +122,7 @@ public class Board {
         return new Move(rowCoordinate, columnCoordinate);
     }
 
-    private State getCurrentGameState() {
+    public State getCurrentGameState() {
         return winningLines.values().stream()
                 .filter(line -> {
                     var cellOne = convertCellFlatIndexToCoordinates(line.get(0));

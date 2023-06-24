@@ -24,7 +24,7 @@ class Menu {
     private Settings settings;
 
     record CommandMatcher(Pattern pattern, Class<? extends Command> clazz) {}
-    private static final Pattern START_CMD_PATTERN = Pattern.compile("start\\s(medium|easy|user)\\s(medium|easy|user)");
+    private static final Pattern START_CMD_PATTERN = Pattern.compile("start\\s(hard|medium|easy|user)\\s(hard|medium|easy|user)");
     private static final Pattern EXIT_CMD_PATTERN = Pattern.compile("exit\\b");
     private static final List<CommandMatcher> ALL_COMMANDS = List.of(
             new CommandMatcher(START_CMD_PATTERN, Start.class),
@@ -114,7 +114,7 @@ class Menu {
             return switch (Difficulty.valueOf(param.toUpperCase())) {
                 case EASY -> new ComputerPlayerEasy(symbol);
                 case MEDIUM -> new ComputerPlayerMedium(symbol);
-                default -> throw new IllegalArgumentException(param);
+                case HARD -> new ComputerPlayerHard(symbol);
             };
         }
 
