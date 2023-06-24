@@ -1,4 +1,4 @@
-package tictactoe;
+package io.mr1g0r.tictactoe;
 
 import java.util.Arrays;
 import java.util.List;

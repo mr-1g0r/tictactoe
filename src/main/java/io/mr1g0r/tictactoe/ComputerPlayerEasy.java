@@ -1,4 +1,4 @@
-package tictactoe;
+package io.mr1g0r.tictactoe;
 
 public class ComputerPlayerEasy extends ComputerPlayer {
 

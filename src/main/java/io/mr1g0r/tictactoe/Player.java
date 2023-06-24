@@ -1,4 +1,4 @@
-package tictactoe;
+package io.mr1g0r.tictactoe;
 
 abstract class Player {
     private final Symbol symbol;

@@ -1,4 +1,4 @@
-package tictactoe;
+package io.mr1g0r.tictactoe;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +41,7 @@ class Menu {
             var command = createCommand(scanner.nextLine());
             if (command.isPresent()) {
                 this.settings = command.get().getSettings();
+                //noinspection SwitchStatementWithTooFewBranches
                 return switch (command.get().getName()) {
                     case "start" -> true;
                     default -> false;
@@ -83,7 +84,7 @@ class Menu {
     }
 
     static class Exit implements Command {
-        public Exit(final String commandString) {}
+        public Exit(final String ignoredCommandString) {}
 
         @Override
         public Settings getSettings() {

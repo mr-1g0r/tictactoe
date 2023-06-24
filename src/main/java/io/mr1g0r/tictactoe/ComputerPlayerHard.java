@@ -1,4 +1,4 @@
-package tictactoe;
+package io.mr1g0r.tictactoe;
 
 import java.util.*;
 
@@ -10,6 +10,7 @@ public class ComputerPlayerHard extends ComputerPlayer {
         super(symbol, HARD);
     }
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Override
     Move doGetMove(final Board board) {
         Optional<CandidateMove> candidateMove = minimax(board, 0);
